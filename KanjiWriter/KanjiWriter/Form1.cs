@@ -97,10 +97,11 @@ namespace KanjiWriter
         {
             // Save kana/kanji //
             /////////////////////
-            
-            // Get the unicode point
-            if (textBox1.Text.Length != 1)
-                MessageBox.Show("Please enter exactly one unicode character in textbox");
+
+            if (_segments == null) return;
+
+            if (textBox1.Text.Length > 0 && char.IsSurrogatePair(textBox1.Text, 0))
+                throw new NotImplementedException("Welp, looks like I need surrogate pair support now!");
 
             // This might not strictly be the most correctest unicoding...
             var codePoint = string.Format("{0:X5}", char.ConvertToUtf32(textBox1.Text, 0));
@@ -121,13 +122,24 @@ namespace KanjiWriter
             }
             maxNum++;
 
-            var filenameData = dir + "\\" + maxNum + ".xml";
+            var filenameData = dir + "\\" + maxNum + ".ji";
             var filenamePng = dir + "\\" + maxNum + ".png";
 
             using (var stream = File.OpenWrite(filenameData))
             {
-                var xmlSerializer = new XmlSerializer(typeof (List<List<TimePoint>>));
-                xmlSerializer.Serialize(stream, _segments);
+                var writer = new StreamWriter(stream);
+                
+                foreach (var s in _segments)
+                {
+                    foreach (var p in s)
+                    {
+                        writer.WriteLine("{0} {1} {2}", p.X, p.Y, p.TimeFromStart);
+                    }
+                    writer.WriteLine();
+                }
+
+                writer.Flush();
+                writer.Close();
             }
 
             Bitmap b = new Bitmap(109, 109);
