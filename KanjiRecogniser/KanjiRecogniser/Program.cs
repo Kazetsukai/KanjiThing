@@ -10,6 +10,7 @@ namespace KanjiRecogniser
     {
         static void Main(string[] args)
         {
+            var kanjiData = new MojiDictionary("kanji");
         }
     }
 }
